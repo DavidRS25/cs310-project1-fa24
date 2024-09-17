@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 public class ClassSchedule {
     
@@ -33,6 +34,97 @@ public class ClassSchedule {
     private final String SUBJECTID_COL_HEADER = "subjectid";
     
     public String convertCsvToJsonString(List<String[]> csv) {
+
+        JsonArray records = new JsonArray(); //Creating main JsonArray container
+        
+        Iterator<String[]> iterator= csv.iterator(); //iterating through CSV
+        
+        LinkedHashMap<String, HashMap> jsonSchedule = new LinkedHashMap<>(); //schedule type hashmap of hashmaps
+        LinkedHashMap<String, String> jsonScheduleType = new LinkedHashMap<>(); // hashmap of accroynm (type) to full name (where)
+        
+        LinkedHashMap<String, HashMap> jsonSubject = new LinkedHashMap<>(); 
+        LinkedHashMap<String, String> jsonSubjectType = new LinkedHashMap<>(); 
+        
+        
+        
+        ArrayList<String> scheduleArray = new ArrayList<String>(); //creating an arraylist to store types of schedule types
+        ArrayList<String> subjectArray = new ArrayList<String>();        
+        
+        
+        
+        if (iterator.hasNext()) {
+            String[] headings = iterator.next();
+            while (iterator.hasNext()) {
+                String[] csvRecord = iterator.next();
+                String recType = csvRecord[5]; //csv record for the TYPE
+                String recWhere = csvRecord[11]; //csv record for the WHERE
+                String recDesc = csvRecord[2].substring(0,3).replaceAll("\\s", ""); //csv record for the Subject Description
+                String recName = csvRecord[1]; //csv record for the SubjectName               
+                
+                for (int i = 0; i < headings.length; ++i) {
+                    
+                    if (scheduleArray.contains(recType)){ //checking to see if its already in our list
+                        
+                        assert true; //skipping if already in our array
+                        //System.out.println("already contains");
+
+                    }
+                    else{
+
+                        scheduleArray.add(csvRecord[5]); //adding to arraylist to be skipped in future
+                        jsonScheduleType.put(recType, recWhere); //adding TYPE and WHERE to hashmap
+                        //System.out.println(jsonScheduleType); 
+                    }
+                    
+                    if (subjectArray.contains(recDesc)){ //checking to see if its already in our list
+                        
+                        assert true; //skipping if already in our array
+                        //System.out.println("already contains");
+
+                    }
+                    else{
+
+                        subjectArray.add(csvRecord[5]); //adding to arraylist to be skipped in future
+                        jsonSubjectType.put(recDesc, recName); //adding TYPE and WHERE to hashmap
+                        //System.out.println(jsonScheduleType); 
+                    }                    
+
+                }
+  
+                
+
+            }
+            jsonSchedule.put("scheduletype", jsonScheduleType);
+            records.add(jsonSubject);
+            jsonSubject.put("subject", jsonSubjectType);
+            records.add(jsonSubject);            
+            //System.out.println(jsonSchedule);
+
+        }        
+        
+
+
+        String jsonString = Jsoner.serialize(records);
+                
+        
+        
+        
+        
+        
+        if (iterator.hasNext()) {
+            String[] headings = iterator.next();
+            while (iterator.hasNext()) {
+                String[] csvRecord = iterator.next();
+                LinkedHashMap<String, String> jsonCourse = new LinkedHashMap<>();
+                for (int i = 0; i < headings.length; ++i) {
+                    jsonCourse.put(headings[i].toLowerCase(), csvRecord[i]);
+                    
+                }
+                //records.add(jsonCourse);
+            }
+        }
+        
+
         
         return ""; // remove this!
         
