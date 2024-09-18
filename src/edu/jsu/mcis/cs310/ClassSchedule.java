@@ -35,48 +35,83 @@ public class ClassSchedule {
     
     public String convertCsvToJsonString(List<String[]> csv) {
 
-        JsonArray records = new JsonArray(); //Creating main JsonArray container
+
         
         Iterator<String[]> iterator= csv.iterator(); //iterating through CSV
         
-        LinkedHashMap<String, HashMap> jsonSchedule = new LinkedHashMap<>(); //schedule type hashmap of hashmaps
-        LinkedHashMap<String, String> jsonScheduleType = new LinkedHashMap<>(); // hashmap of accroynm (type) to full name (where)
         
-        LinkedHashMap<String, HashMap> jsonSubject = new LinkedHashMap<>(); 
-        LinkedHashMap<String, String> jsonSubjectType = new LinkedHashMap<>(); 
+        LinkedHashMap<String, String> jsonSchedules = new LinkedHashMap<>(); // hashmap of accroynm (type) to full name (where)
         
         
+        LinkedHashMap<String, String> jsonSubjects = new LinkedHashMap<>(); 
+
+        LinkedHashMap<String, HashMap> jsonCourses = new LinkedHashMap<>();   
         
-        ArrayList<String> scheduleArray = new ArrayList<String>(); //creating an arraylist to store types of schedule types
-        ArrayList<String> subjectArray = new ArrayList<String>();        
+          
         
+
+        ArrayList<String> scheduleArrayCount = new ArrayList<>(); //creating an arraylist to store types of schedule types
+        ArrayList<String> subjectArrayCount = new ArrayList<>(); 
+        ArrayList<String> courseArrayCount = new ArrayList<>();
         
+        ArrayList<String> crnArrayCount = new ArrayList<>(); 
+        ArrayList<HashMap> sectionArrayHashMaps = new ArrayList<>();
+
+
+        
+
         
         if (iterator.hasNext()) {
             String[] headings = iterator.next();
             while (iterator.hasNext()) {
                 String[] csvRecord = iterator.next();
-                String recType = csvRecord[5]; //csv record for the TYPE
-                String recWhere = csvRecord[11]; //csv record for the WHERE
-                String recDesc = csvRecord[2].substring(0,3).replaceAll("\\s", ""); //csv record for the Subject Description
-                String recName = csvRecord[1]; //csv record for the SubjectName               
+                
+                String recType = csvRecord[5]; //csv record for the of class abbreviated (online = ONL etc)
+                String recHow = csvRecord[11]; //csv record for the how the class is ran (online vs in person etc)
+                
+                String recAbbv = csvRecord[2].substring(0,3).replaceAll("\\s", ""); //csv record for the Subject Description
+                String recName = csvRecord[1]; //csv record for the SubjectName
+                
+ 
+                String recNum = csvRecord[2].substring(csvRecord[2].length() -3);
+                String recDesc = csvRecord[3];
+                String recNameAndNnum = csvRecord[2];
+                int recCredits = Integer.parseInt(csvRecord[6]);
+                
+                int recCrnInt = Integer.parseInt(csvRecord[0]);
+                String recCrn = csvRecord[0];                
+                String recSect = csvRecord[4];
+                String recStart = csvRecord[7];
+                String recEnd = csvRecord[8];
+                String recDays = csvRecord[9];
+                String recWhere = csvRecord[10];
+                String[] recIntructors = csvRecord[12].split(",");
+                ArrayList<String> Instructors = new ArrayList<>();
+
+                for (int y = 0; y < recIntructors.length; y++){
+                    Instructors.add(recIntructors[y].replaceAll("^\\s+", "").replaceAll("\\s+$", ""));
+                }
+                
+
+
+                        
                 
                 for (int i = 0; i < headings.length; ++i) {
                     
-                    if (scheduleArray.contains(recType)){ //checking to see if its already in our list
+                    if (scheduleArrayCount.contains(recType)){ //checking to see if its already in our list
                         
                         assert true; //skipping if already in our array
-                        //System.out.println("already contains");
+
 
                     }
                     else{
 
-                        scheduleArray.add(csvRecord[5]); //adding to arraylist to be skipped in future
-                        jsonScheduleType.put(recType, recWhere); //adding TYPE and WHERE to hashmap
-                        //System.out.println(jsonScheduleType); 
+                        scheduleArrayCount.add(csvRecord[5]); //adding to arraylist to be skipped in future
+                        jsonSchedules.put(recType, recHow); //adding TYPE and WHERE to hashmap
+
                     }
                     
-                    if (subjectArray.contains(recDesc)){ //checking to see if its already in our list
+                    if (subjectArrayCount.contains(recDesc)){ //checking to see if its already in our list
                         
                         assert true; //skipping if already in our array
                         //System.out.println("already contains");
@@ -84,49 +119,89 @@ public class ClassSchedule {
                     }
                     else{
 
-                        subjectArray.add(csvRecord[5]); //adding to arraylist to be skipped in future
-                        jsonSubjectType.put(recDesc, recName); //adding TYPE and WHERE to hashmap
-                        //System.out.println(jsonScheduleType); 
+                        subjectArrayCount.add(recDesc); //adding to arraylist to be skipped in future
+                        jsonSubjects.put(recAbbv, recName); //adding TYPE and WHERE to hashmap
+                        //System.out.println(jsonSchedules); 
+                    }
+                    
+                    
+                    if (courseArrayCount.contains(recNameAndNnum)){ //checking to see if its already in our list
+                        
+                        assert true; //skipping if already in our array
+
+
+                    }
+                    else{
+
+                        courseArrayCount.add(csvRecord[2]); //adding to arraylist to be skipped in future
+                        LinkedHashMap<String, Object> jsonCourseDetails = new LinkedHashMap<>();                        
+                        jsonCourseDetails.put(SUBJECTID_COL_HEADER, recAbbv);
+                        
+                        jsonCourseDetails.put(NUM_COL_HEADER, recNum);
+                       
+                        jsonCourseDetails.put(DESCRIPTION_COL_HEADER, recDesc);
+                        
+                        jsonCourseDetails.put(CREDITS_COL_HEADER, recCredits);
+                        //System.out.println(recAbbv);
+                        
+                        jsonCourses.put(recNameAndNnum, jsonCourseDetails);
+
+                        
+                    }
+                    if (crnArrayCount.contains(recCrn)){ //checking to see if its already in our list
+                        
+                        assert true; //skipping if already in our array
+
+                    }
+                    else{
+
+                        crnArrayCount.add(recCrn); //adding to arraylist to be skipped in future
+                        LinkedHashMap<String, Object> jsonSectionDetails = new LinkedHashMap<>();
+                        
+                        jsonSectionDetails.put(CRN_COL_HEADER, recCrnInt);
+                        jsonSectionDetails.put(SUBJECTID_COL_HEADER, recAbbv);
+                        jsonSectionDetails.put(NUM_COL_HEADER, recNum);
+                        jsonSectionDetails.put(SECTION_COL_HEADER, recSect);
+                        jsonSectionDetails.put(TYPE_COL_HEADER, recType);
+                        jsonSectionDetails.put(START_COL_HEADER, recStart);
+                        jsonSectionDetails.put(END_COL_HEADER, recEnd);
+                        jsonSectionDetails.put(DAYS_COL_HEADER, recDays);
+                        jsonSectionDetails.put(WHERE_COL_HEADER, recWhere);
+
+                        jsonSectionDetails.put(INSTRUCTOR_COL_HEADER, Instructors);
+                        
+                        
+                        
+                        sectionArrayHashMaps.add(jsonSectionDetails);
+                        
+                        
+                        
                     }                    
+                    
 
                 }
   
-                
+               
 
             }
-            jsonSchedule.put("scheduletype", jsonScheduleType);
-            records.add(jsonSubject);
-            jsonSubject.put("subject", jsonSubjectType);
-            records.add(jsonSubject);            
+
+            
             //System.out.println(jsonSchedule);
 
         }        
         
+        JsonObject mainRecord = new JsonObject();
+        mainRecord.put("scheduletype", jsonSchedules);
+        mainRecord.put(SUBJECT_COL_HEADER, jsonSubjects);
+        mainRecord.put("course", jsonCourses);
+        mainRecord.put("section", sectionArrayHashMaps);
 
+        String jsonString = Jsoner.serialize(mainRecord);
 
-        String jsonString = Jsoner.serialize(records);
-                
-        
-        
-        
-        
-        
-        if (iterator.hasNext()) {
-            String[] headings = iterator.next();
-            while (iterator.hasNext()) {
-                String[] csvRecord = iterator.next();
-                LinkedHashMap<String, String> jsonCourse = new LinkedHashMap<>();
-                for (int i = 0; i < headings.length; ++i) {
-                    jsonCourse.put(headings[i].toLowerCase(), csvRecord[i]);
-                    
-                }
-                //records.add(jsonCourse);
-            }
-        }
-        
+            // Print final JSON string after all data is added
+        System.out.println(jsonString);
 
-        
-        return ""; // remove this!
+            return jsonString;
         
     }
     
