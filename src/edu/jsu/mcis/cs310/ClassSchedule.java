@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.math.BigDecimal; //had to import this for it to read the INTs in the JSON file for some reason
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -199,13 +200,97 @@ public class ClassSchedule {
         String jsonString = Jsoner.serialize(mainRecord);
 
             // Print final JSON string after all data is added
-        System.out.println(jsonString);
+        //=System.out.println(jsonString);
 
             return jsonString;
         
     }
     
     public String convertJsonToCsvString(JsonObject json) {
+        
+        String[] csvHeaders = {CRN_COL_HEADER,SUBJECT_COL_HEADER, NUM_COL_HEADER, DESCRIPTION_COL_HEADER, SECTION_COL_HEADER, TYPE_COL_HEADER, CREDITS_COL_HEADER, START_COL_HEADER, END_COL_HEADER, 
+                                DAYS_COL_HEADER, WHERE_COL_HEADER,SCHEDULE_COL_HEADER,INSTRUCTOR_COL_HEADER}; //headers of CSV file
+                        
+        ArrayList<String> csvBody = new ArrayList<>();
+        
+        StringWriter writer = new StringWriter();
+        CSVWriter csvWriter = new CSVWriter(writer, ',', '"', '\\', "\n");
+        
+        csvWriter.writeNext(csvHeaders); //writing to CSV file
+        
+        
+
+ 
+        
+        JsonArray sectionArray = (JsonArray) json.get("section");
+ 
+        
+        
+        for(Object sectionDetails : sectionArray){
+            JsonObject sectionObject = (JsonObject) sectionDetails;
+            JsonObject subjectType = (JsonObject) json.get("subject");
+                       
+                
+                BigDecimal crn = ((BigDecimal) sectionObject.get("crn"));
+                String crn2 = crn.toString();
+                csvBody.add(crn2);
+                
+                String subject = (String) sectionObject.get("subjectid");
+                String abbvToFullName = (String) subjectType.get(subject); 
+                //System.out.println(abbvToFullName);
+                csvBody.add(abbvToFullName);
+                
+                String num = (String) sectionObject.get("num");
+                String numAndSubject = subject + " " + num;
+                csvBody.add(numAndSubject);
+                
+                
+                
+                String section = (String) sectionObject.get("section");
+
+                
+                String type = (String) sectionObject.get("type");
+                csvBody.add(type);
+                String start = (String) sectionObject.get("start");
+                csvBody.add(start);
+                String end = (String) sectionObject.get("end");
+                csvBody.add(end);
+                String days = (String) sectionObject.get("days");
+                csvBody.add(days);
+                String where = (String) sectionObject.get("where"); 
+                csvBody.add(where);
+                //System.out.println(crn2);
+                System.out.println(csvBody);
+                
+                // Extract instructors
+                JsonArray instructorArray = (JsonArray) sectionObject.get("instructor");
+                for (Object instructor : instructorArray) {
+                    String instructorName = (String) instructor;
+                    //System.out.println("Instructor: " + instructorName);
+                }                
+                
+                
+        }
+        
+        
+        
+        
+        
+        //System.out.println(test.get("ACT"));
+        
+        //Iterator<Object> iterator = test.iterator();
+            //while (iterator.hasNext()) {
+             //System.out.println(iterator.next());
+            //}       
+        
+        
+        
+        
+        
+        
+        
+        String csvString = writer.toString(); //writing out final file
+        //System.out.println(csvString);
         
         return ""; // remove this!
         
