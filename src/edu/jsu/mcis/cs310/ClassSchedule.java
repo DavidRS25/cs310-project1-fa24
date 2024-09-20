@@ -211,63 +211,104 @@ public class ClassSchedule {
         String[] csvHeaders = {CRN_COL_HEADER,SUBJECT_COL_HEADER, NUM_COL_HEADER, DESCRIPTION_COL_HEADER, SECTION_COL_HEADER, TYPE_COL_HEADER, CREDITS_COL_HEADER, START_COL_HEADER, END_COL_HEADER, 
                                 DAYS_COL_HEADER, WHERE_COL_HEADER,SCHEDULE_COL_HEADER,INSTRUCTOR_COL_HEADER}; //headers of CSV file
                         
-        ArrayList<String> csvBody = new ArrayList<>();
+        
         
         StringWriter writer = new StringWriter();
-        CSVWriter csvWriter = new CSVWriter(writer, ',', '"', '\\', "\n");
+        CSVWriter csvWriter = new CSVWriter(writer, '\t', '"', '\\', "\n");
         
-        csvWriter.writeNext(csvHeaders); //writing to CSV file
+        csvWriter.writeNext(csvHeaders); //writing headers to CSV file
         
         
 
  
         
-        JsonArray sectionArray = (JsonArray) json.get("section");
- 
+        JsonArray sectionArray = (JsonArray) json.get("section"); //putting section arrays into JsonArray
         
-        
-        for(Object sectionDetails : sectionArray){
-            JsonObject sectionObject = (JsonObject) sectionDetails;
+
+        for(Object sectionDetails : sectionArray){ //iterating through the array for the objects (arrays)
+            
+            
+            JsonObject sectionObject = (JsonObject) sectionDetails; //getting section details
             JsonObject subjectType = (JsonObject) json.get("subject");
+            JsonObject courseInfo = (JsonObject) json.get("course");
+            JsonObject scheduleInfo = (JsonObject) json.get("scheduletype");
+            
+            
                        
+                // get CRN 
                 
-                BigDecimal crn = ((BigDecimal) sectionObject.get("crn"));
-                String crn2 = crn.toString();
-                csvBody.add(crn2);
+                BigDecimal crn = ((BigDecimal) sectionObject.get("crn")); //using BigDecimal after research was the only way to get the int crn variable to work???
+  
+                String crn2 = crn.toString(); //converting it to a string
                 
+                // get subject name from abbverviation in aubject
                 String subject = (String) sectionObject.get("subjectid");
-                String abbvToFullName = (String) subjectType.get(subject); 
-                //System.out.println(abbvToFullName);
-                csvBody.add(abbvToFullName);
+                String abbvToFullName = (String) subjectType.get(subject);
                 
+                //combined abbv subject name and class num
                 String num = (String) sectionObject.get("num");
                 String numAndSubject = subject + " " + num;
-                csvBody.add(numAndSubject);
+                JsonObject courseDetails = (JsonObject) courseInfo.get(numAndSubject);
                 
                 
+                String courseDescription = (String) courseDetails.get("description");
+                
+                
+                
+                BigDecimal courseCredits = (BigDecimal) courseDetails.get("credits");
+                String courseCreditsToString = courseCredits.toString();
                 
                 String section = (String) sectionObject.get("section");
 
                 
                 String type = (String) sectionObject.get("type");
-                csvBody.add(type);
+                
                 String start = (String) sectionObject.get("start");
-                csvBody.add(start);
+                
                 String end = (String) sectionObject.get("end");
-                csvBody.add(end);
+                
                 String days = (String) sectionObject.get("days");
-                csvBody.add(days);
+                
                 String where = (String) sectionObject.get("where"); 
-                csvBody.add(where);
-                //System.out.println(crn2);
-                System.out.println(csvBody);
+                
+                String courseSchedule = (String) scheduleInfo.get(type);
+                
+                // adding all to string array
+                
+                
+                
                 
                 // Extract instructors
                 JsonArray instructorArray = (JsonArray) sectionObject.get("instructor");
+                 
+                ArrayList<String> instructorArrayList = new ArrayList<>();
+                StringBuilder instructors = new StringBuilder();
+                
                 for (Object instructor : instructorArray) {
+                    
                     String instructorName = (String) instructor;
-                    //System.out.println("Instructor: " + instructorName);
-                }                
+                    instructorArrayList.add(instructorName);
+                }
+                
+                for (int i =0; i < instructorArrayList.size(); i++){
+                        
+                    String name = instructorArrayList.get(i);
+                    
+                    if(i < instructorArrayList.size()-1){
+                        instructors.append(name);
+                        instructors.append(", ");
+                    }
+                    else{
+                        instructors.append(name);
+                    }
+                }
+                
+                   
+                
+                
+                
+                String[] csvBody = {crn2, abbvToFullName, numAndSubject, courseDescription, section, type, courseCreditsToString, start, end, days, where, courseSchedule ,instructors.toString()};
+                csvWriter.writeNext(csvBody);
                 
                 
         }
@@ -275,24 +316,17 @@ public class ClassSchedule {
         
         
         
-        
-        //System.out.println(test.get("ACT"));
-        
-        //Iterator<Object> iterator = test.iterator();
-            //while (iterator.hasNext()) {
-             //System.out.println(iterator.next());
-            //}       
-        
-        
+    
         
         
         
         
         
         String csvString = writer.toString(); //writing out final file
-        //System.out.println(csvString);
+
+        System.out.println(csvString);
         
-        return ""; // remove this!
+        return csvString; // remove this!
         
     }
     
